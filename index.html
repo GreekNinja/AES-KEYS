@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +12,7 @@
             background-color: #232323;
             color: #ffffff;
             margin: 0;
-            padding: 20px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -25,20 +26,21 @@
 
         #aes-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            max-width: 1200px;
-            margin-top: 20px;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            max-width: 100%;
+            margin-top: 10px;
         }
 
         .aes-item {
             text-align: left;
             background-color: #333;
-            padding: 20px;
+            padding: 10px;
             border-radius: 8px;
             transition: transform 0.3s;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            width: 100%;
         }
 
         .aes-item:hover {
@@ -46,37 +48,37 @@
         }
 
         .aes-key {
-            font-size: 18px;
-            margin-bottom: 10px;
+            font-size: 16px;
+            margin-bottom: 8px;
             color: #4CAF50;
             word-break: break-all;
         }
 
         .aes-details {
-            font-size: 14px;
+            font-size: 12px;
             color: #888888;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .aes-description {
-            font-size: 12px;
+            font-size: 10px;
             color: #aaaaaa;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .aes-property {
-            font-size: 14px;
+            font-size: 12px;
             color: #888888;
         }
 
         .aes-updated {
-            font-size: 14px;
+            font-size: 12px;
             color: #aaaaaa;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .aes-empty {
-            font-size: 14px;
+            font-size: 12px;
             color: #888888;
             font-style: italic;
         }
@@ -84,121 +86,136 @@
         .error-message {
             text-align: center;
             color: #ff5555;
-            margin-top: 20px;
+            margin-top: 10px;
         }
 
         .redirect-button {
             background-color: #4CAF50;
             color: #ffffff;
-            padding: 10px;
+            padding: 8px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
+
+        @media only screen and (max-width: 600px) {
+            body {
+                padding: 5px;
+            }
+
+            #aes-container {
+                grid-template-columns: 1fr;
+            }
+
+            .aes-item {
+                width: 100%;
+            }
+        }
     </style>
 </head>
+
 <body>
 
-<h1>Fortnite AES Key Viewer</h1>
+    <h1>Fortnite AES Key Viewer</h1>
 
-<div id="aes-container"></div>
+    <div id="aes-container"></div>
 
-<button class="redirect-button" onclick="redirectToCosmeticsSite()">View New Cosmetics</button>
+    <button class="redirect-button" onclick="redirectToCosmeticsSite()">View New Cosmetics</button>
 
-<script>
-    function getAESKeys() {
-        fetch('https://fortnite-api.com/v2/aes')
-            .then(response => response.json())
-            .then(data => {
-                displayAESKeys(data);
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
+    <script>
+        function getAESKeys() {
+            fetch('https://fortnite-api.com/v2/aes')
+                .then(response => response.json())
+                .then(data => {
+                    displayAESKeys(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    displayError('Error fetching AES Keys. Please try again.');
+                });
+        }
+
+        function displayAESKeys(data) {
+            const aesContainer = document.getElementById('aes-container');
+            aesContainer.innerHTML = '';
+
+            const aesElement = document.createElement('div');
+
+            if (data.status === 200) {
+                const aesKeys = data.data.dynamicKeys;
+
+                aesKeys.forEach(aesKey => {
+                    const aesItem = document.createElement('div');
+                    aesItem.classList.add('aes-item');
+
+                    const aesKeyElement = document.createElement('p');
+                    aesKeyElement.classList.add('aes-key');
+                    aesKeyElement.textContent = `AES Key: ${aesKey.key}`;
+                    aesItem.appendChild(aesKeyElement);
+
+                    const aesDetailsElement = document.createElement('p');
+                    aesDetailsElement.classList.add('aes-details');
+                    aesDetailsElement.textContent = `File: ${aesKey.pakFilename}, GUID: ${aesKey.pakGuid}`;
+                    aesItem.appendChild(aesDetailsElement);
+
+                    const aesDescriptionElement = document.createElement('p');
+                    aesDescriptionElement.classList.add('aes-description');
+                    const description = getDescription(aesKey.pakFilename);
+                    aesDescriptionElement.textContent = description ? `Description: ${description}` : 'Description: Not available';
+                    aesItem.appendChild(aesDescriptionElement);
+
+                    const aesPropertiesElement = document.createElement('div');
+                    aesPropertiesElement.classList.add('aes-properties');
+
+                    const pakFilenameElement = document.createElement('p');
+                    pakFilenameElement.classList.add('aes-property');
+                    pakFilenameElement.textContent = `Pak Filename: ${aesKey.pakFilename}`;
+                    aesPropertiesElement.appendChild(pakFilenameElement);
+
+                    const pakGuidElement = document.createElement('p');
+                    pakGuidElement.classList.add('aes-property');
+                    pakGuidElement.textContent = `Pak GUID: ${aesKey.pakGuid}`;
+                    aesPropertiesElement.appendChild(pakGuidElement);
+
+                    aesItem.appendChild(aesPropertiesElement);
+
+                    const aesUpdatedElement = document.createElement('p');
+                    aesUpdatedElement.classList.add('aes-updated');
+                    const updatedDate = new Date(data.data.updated);
+                    aesUpdatedElement.textContent = `Updated: ${formatDate(updatedDate)}`;
+                    aesItem.appendChild(aesUpdatedElement);
+
+                    aesElement.appendChild(aesItem);
+                });
+            } else {
                 displayError('Error fetching AES Keys. Please try again.');
-            });
-    }
+            }
 
-    function displayAESKeys(data) {
-        const aesContainer = document.getElementById('aes-container');
-        aesContainer.innerHTML = '';
-
-        const aesElement = document.createElement('div');
-
-        if (data.status === 200) {
-            const aesKeys = data.data.dynamicKeys;
-
-            aesKeys.forEach(aesKey => {
-                const aesItem = document.createElement('div');
-                aesItem.classList.add('aes-item');
-
-                const aesKeyElement = document.createElement('p');
-                aesKeyElement.classList.add('aes-key');
-                aesKeyElement.textContent = `AES Key: ${aesKey.key}`;
-                aesItem.appendChild(aesKeyElement);
-
-                const aesDetailsElement = document.createElement('p');
-                aesDetailsElement.classList.add('aes-details');
-                aesDetailsElement.textContent = `File: ${aesKey.pakFilename}, GUID: ${aesKey.pakGuid}`;
-                aesItem.appendChild(aesDetailsElement);
-
-                const aesDescriptionElement = document.createElement('p');
-                aesDescriptionElement.classList.add('aes-description');
-                const description = getDescription(aesKey.pakFilename);
-                aesDescriptionElement.textContent = description ? `Description: ${description}` : 'Description: Not available';
-                aesItem.appendChild(aesDescriptionElement);
-
-                const aesPropertiesElement = document.createElement('div');
-                aesPropertiesElement.classList.add('aes-properties');
-
-                const pakFilenameElement = document.createElement('p');
-                pakFilenameElement.classList.add('aes-property');
-                pakFilenameElement.textContent = `Pak Filename: ${aesKey.pakFilename}`;
-                aesPropertiesElement.appendChild(pakFilenameElement);
-
-                const pakGuidElement = document.createElement('p');
-                pakGuidElement.classList.add('aes-property');
-                pakGuidElement.textContent = `Pak GUID: ${aesKey.pakGuid}`;
-                aesPropertiesElement.appendChild(pakGuidElement);
-
-                aesItem.appendChild(aesPropertiesElement);
-
-                const aesUpdatedElement = document.createElement('p');
-                aesUpdatedElement.classList.add('aes-updated');
-                const updatedDate = new Date(data.data.updated);
-                aesUpdatedElement.textContent = `Updated: ${formatDate(updatedDate)}`;
-                aesItem.appendChild(aesUpdatedElement);
-
-                aesElement.appendChild(aesItem);
-            });
-        } else {
-            displayError('Error fetching AES Keys. Please try again.');
+            aesContainer.appendChild(aesElement);
         }
 
-        aesContainer.appendChild(aesElement);
-    }
-
-    function redirectToCosmeticsSite() {
-        // Replace 'https://example.com/cosmetics' with the actual URL of the cosmetics site
-        window.location.href = 'https://greekninja.github.io/all-new-skins/';
-    }
-
-    function getDescription(pakFilename) {
-        if (pakFilename.includes('pakchunk1000')) {
-            return 'loading screens and textures';
-        } else if (pakFilename.includes('pakchunk1001')) {
-            return 'character models and animations';
-        } else {
-            return null;
+        function redirectToCosmeticsSite() {
+            window.location.href = 'https://example.com/cosmetics';
         }
-    }
 
-    function formatDate(date) {
-        const options = { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short' };
-        return new Intl.DateTimeFormat('en-US', options).format(date);
-    }
+        function getDescription(pakFilename) {
+            if (pakFilename.includes('pakchunk1000')) {
+                return 'loading screens and textures';
+            } else if (pakFilename.includes('pakchunk1001')) {
+                return 'character models and animations';
+            } else {
+                return null;
+            }
+        }
 
-    window.onload = getAESKeys;
-</script>
+        function formatDate(date) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short' };
+            return new Intl.DateTimeFormat('en-US', options).format(date);
+        }
+
+        window.onload = getAESKeys;
+    </script>
 
 </body>
+
 </html>
